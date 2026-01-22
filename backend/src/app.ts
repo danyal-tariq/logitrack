@@ -6,6 +6,9 @@ import dotenv from 'dotenv';
 import vehicleRouter from './routes/vehicleRoutes';
 import logger from './config/logger';
 
+//Workers
+import './workers/locationWorker';
+
 dotenv.config();
 const app = express();
 const server = http.createServer(app);

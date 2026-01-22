@@ -4,9 +4,12 @@ import logger from './logger';
 
 dotenv.config();
 
-const redisClient = createClient({
+
+const redisConnection = {
     url: process.env.REDIS_URL as string,
-});
+}
+
+const redisClient = createClient(redisConnection);
 
 redisClient.on('error', (err) => logger.error({ err }, '❌ Redis Client Error'));
 redisClient.on('connect', () => {
@@ -18,4 +21,4 @@ redisClient.on('connect', () => {
     logger.info('✅ Connected to Redis');
 })();
 
-export default redisClient;
+export { redisClient, redisConnection };

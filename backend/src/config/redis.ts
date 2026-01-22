@@ -7,6 +7,10 @@ dotenv.config();
 
 const redisConnection = {
     url: process.env.REDIS_URL as string,
+    /// Why? BullMQ uses blocking commands (BRPOPLPUSH) to wait for new jobs.
+    //  By default, the redis client will error out if a request stays open too long.
+    //  Setting this to null is a requirement for BullMQ to remain stable during long idle periods.
+    maxRetriesPerRequest: null,
 }
 
 const redisClient = createClient(redisConnection);

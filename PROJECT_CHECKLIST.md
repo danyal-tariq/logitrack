@@ -25,14 +25,20 @@
 - [x] **Structured Logging:** Replace `console.log` with **Pino**. Ensure logs are JSON-formatted for observability tools.
 
 ### 3.2 The "Write-Behind" Pattern (Async Processing)
-- [ ] **Message Queue:** Install **BullMQ** (or Redis Streams) to handle high-throughput ingestion.
-- [ ] **Producer Logic:** Refactor `POST /api/location` to push jobs to the Queue instead of writing to DB directly.
-- [ ] **Worker Service:** Create a dedicated worker process (`src/workers/locationWorker.ts`) to consume jobs and perform the SQL writes.
-- [ ] **Batching:** Configure the worker to insert records in batches (e.g., every 50 records or 500ms) to reduce DB IOPS.
+- [x] **Message Queue:** Install **BullMQ** (or Redis Streams) to handle high-throughput ingestion.
+- [x] **Producer Logic:** Refactor `POST /api/location` to push jobs to the Queue instead of writing to DB directly.
+- [x] **Worker Service:** Create a dedicated worker process (`src/workers/locationWorker.ts`) to consume jobs and perform the SQL writes.
+- [x] **Batching:** Configure the worker to insert records in batches (e.g., every 50 records or 500ms) to reduce DB IOPS.
 
 ### 3.3 Reliability
-- [ ] **Graceful Shutdown:** Implement logic to close DB pools and Redis connections on `SIGTERM`.
-- [ ] **Retry Logic:** Configure BullMQ to retry failed database writes (e.g., if DB is temporarily locked).
+- [x] **Graceful Shutdown:** Implement logic to close DB pools and Redis connections on `SIGTERM`.
+- [x] **Retry Logic:** Configure BullMQ to retry failed database writes (e.g., if DB is temporarily locked).
+
+### 3.4 Observability (Monitoring & Health)
+- [ ] **Health Checks:** Implement `GET /health` endpoint for DB and Redis status.
+- [ ] **Queue Monitoring:** Track job failure rates and queue depth for backpressure alerts.
+- [ ] **Tracing:** Implement Correlation IDs to track a location update from request to background persistence.
+- [ ] **Dashboard** Implemet Bull Board for monitoring job queues.
 
 ## ⚪ Phase 4: Database Engineering
 *Goal: Optimize for millions of rows.*

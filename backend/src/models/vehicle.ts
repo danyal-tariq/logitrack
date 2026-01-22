@@ -12,7 +12,8 @@ export const LocationUpdateSchema = z.object({
   vehicleId: z.number().int().positive(),
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
-  speed: z.number().min(0),
+  speed: z.number().min(0).default(0),
+  heading: z.number().min(0).max(360).default(0),
   status: z.string().min(1)
 });
 

@@ -12,8 +12,8 @@ const intervalId = setInterval(() => {
 }, 1000);
 
 const locationWorker = new Worker('locationQueue', async job => {
-    const { vehicleId, lat, lng, speed, heading, status } = job.data as LocationUpdate;
-    jobsQueue.push({ vehicleId, lat, lng, speed, heading, status });
+    const { vehicleId, lat, lng, speed, heading, status, version } = job.data as LocationUpdate;
+    jobsQueue.push({ vehicleId, lat, lng, speed, heading, status,version });
 }, {
     connection: redisConnection,
     drainDelay: 5,
@@ -46,9 +46,9 @@ const processJobsQueue = async () => {
         // 2. Prepare Bulk Update for vehicle status
         const updateValues = jobsToProcess.map((job, index) => {
             const valueIndex = index * 2;
-            return `($${valueIndex + 1}::integer, $${valueIndex + 2})`;
+            return `($${valueIndex + 1}::integer, $${valueIndex + 2}, $${valueIndex + 3})`;
         }).join(', ');
-        const updateParams = jobsToProcess.flatMap(job => [job.vehicleId, job.status]);
+        const updateParams = jobsToProcess.flatMap(job => [job.vehicleId, job.status, job.version]);
 
         const client = await pool.connect();
         try {
@@ -63,9 +63,9 @@ const processJobsQueue = async () => {
             // Bulk Update Vehicle Statuses
             await client.query(`
                 UPDATE vehicles
-                SET status = v.new_status, last_updated = NOW()
-                FROM (VALUES ${updateValues}) AS v(id, new_status)
-                WHERE vehicles.id = v.id
+                SET status = v.new_status, last_updated = NOW(), version = v.version + 1
+                FROM (VALUES ${updateValues}) AS v(id, new_status, version)
+                WHERE vehicles.id = v.id AND vehicles.version = v.version
             `, updateParams);
 
             await client.query('COMMIT');

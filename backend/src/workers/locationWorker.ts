@@ -12,12 +12,11 @@ const intervalId = setInterval(() => {
 }, 1000);
 
 const locationWorker = new Worker('locationQueue', async job => {
-    const { vehicleId, lat, lng, speed, status } = job.data as LocationUpdate;
-    jobsQueue.push({ vehicleId, lat, lng, speed, status });
+    const { vehicleId, lat, lng, speed, heading, status, version } = job.data as LocationUpdate;
+    jobsQueue.push({ vehicleId, lat, lng, speed, heading, status,version });
 }, {
     connection: redisConnection,
     drainDelay: 5,
-
 })
 
 locationWorker.on('completed', (job) => {
@@ -37,28 +36,19 @@ const processJobsQueue = async () => {
         const jobsToProcess = jobsQueue.splice(0, jobsQueue.length);
 
         // 1. Prepare Bulk Insert for locations
-        // for example, for 3 jobs we need:
-        // INSERT INTO vehicle_locations (vehicle_id, location, speed) VALUES
-        // ($1, ST_SetSRID(ST_MakePoint($2, $3), 4326), $4),
-        // ($5, ST_SetSRID(ST_MakePoint($6, $7), 4326), $8),
-        // ($9, ST_SetSRID(ST_MakePoint($10, $11), 4326), $12);
-
         const insertValues = jobsToProcess.map((job, index) => {
-            const valueIndex = index * 4;
-            return `($${valueIndex + 1}, ST_SetSRID(ST_MakePoint($${valueIndex + 2}, $${valueIndex + 3}), 4326), $${valueIndex + 4})`;
+            const valueIndex = index * 5;
+            return `($${valueIndex + 1}, ST_SetSRID(ST_MakePoint($${valueIndex + 2}, $${valueIndex + 3}), 4326), $${valueIndex + 4}, $${valueIndex + 5})`;
         }).join(', ');
 
-        // Flatten parameters
-        // vehicleId, lng, lat, speed for each job
-        // e.g. [1, lng1, lat1, speed1, 2, lng2, lat2, speed2, ...]
-        const insertParams = jobsToProcess.flatMap(job => [job.vehicleId, job.lng, job.lat, job.speed]);
+        const insertParams = jobsToProcess.flatMap(job => [job.vehicleId, job.lng, job.lat, job.speed, job.heading]);
 
         // 2. Prepare Bulk Update for vehicle status
         const updateValues = jobsToProcess.map((job, index) => {
             const valueIndex = index * 2;
-            return `($${valueIndex + 1}::integer, $${valueIndex + 2})`;
+            return `($${valueIndex + 1}::integer, $${valueIndex + 2}, $${valueIndex + 3})`;
         }).join(', ');
-        const updateParams = jobsToProcess.flatMap(job => [job.vehicleId, job.status]);
+        const updateParams = jobsToProcess.flatMap(job => [job.vehicleId, job.status, job.version]);
 
         const client = await pool.connect();
         try {
@@ -66,16 +56,16 @@ const processJobsQueue = async () => {
 
             // Bulk Insert Locations
             await client.query(`
-                INSERT INTO vehicle_locations (vehicle_id, location, speed)
+                INSERT INTO vehicle_locations (vehicle_id, location, speed, heading)
                 VALUES ${insertValues}
             `, insertParams);
 
             // Bulk Update Vehicle Statuses
             await client.query(`
                 UPDATE vehicles
-                SET status = v.new_status, last_updated = NOW()
-                FROM (VALUES ${updateValues}) AS v(id, new_status)
-                WHERE vehicles.id = v.id
+                SET status = v.new_status, last_updated = NOW(), version = v.version + 1
+                FROM (VALUES ${updateValues}) AS v(id, new_status, version)
+                WHERE vehicles.id = v.id AND vehicles.version = v.version
             `, updateParams);
 
             await client.query('COMMIT');

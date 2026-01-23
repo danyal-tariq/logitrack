@@ -44,7 +44,8 @@
 *Goal: Optimize for millions of rows.*
 - [x] **Partitioning:** Refactor `vehicle_locations` table to use **Declarative Partitioning** by Date (e.g., one partition per month).
 - [x] **Materialized Views:** Create a view for "Daily Fleet Analytics" (total distance, avg speed) and set up a refresh strategy.
-- [ ] **Concurrency Control:** Implement Optimistic Locking (versioning) on the `vehicles` table to prevent race conditions during status updates.
+- [x] **Concurrency Control:** Implement Optimistic Locking (versioning) on the `vehicles` table to prevent race conditions during status updates.
+- [ ] **Conflict Detection (Advanced):** Implement a mechanism to handle and log out-of-order delivery based on `recorded_at` timestamps.
 
 ## ⚪ Phase 5: The Simulation & Load Testing
 - [ ] **Simulator Script:** Create a Node.js script that spawns 500 "Virtual Trucks" moving randomly around Dubai coordinates.

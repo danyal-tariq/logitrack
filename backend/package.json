@@ -10,6 +10,8 @@
     "migrate": "node-pg-migrate -f database.json up",
     "migrate:down": "node-pg-migrate -f database.json down",
     "migrate:create": "node-pg-migrate -f database.json create",
+    "create-db": "node scripts/create-db.js",
+    "drop-db": "node scripts/drop-db.js",
     "seed": "ts-node src/seed.ts"
   },
   "keywords": [],

@@ -1,45 +1,71 @@
 import { VirtualTruck } from './truck';
+import { DUBAI_ROUTES, getRouteByType } from './routes';
 import * as dotenv from 'dotenv';
 import * as colors from 'colors';
 
 dotenv.config();
 
-const TRUCK_COUNT = 500;
-const API_URL = process.env.API_URL || 'http://localhost:3000/api';
+const TRUCK_COUNT = 50;
+const API_URL = process.env.API_URL || 'http://localhost:4000/api';
 // Tick every 2 seconds to simulate high frequent updates across many units
 const REPORT_INTERVAL_MS = 2000; 
 
-// Initial coordinates around Dubai Downtown
-const DUBAI_LAT = 25.1972;
-const DUBAI_LNG = 55.2744;
+// Fleet composition by route type
+const FLEET_COMPOSITION = {
+    highway: 0.3,      // 30% long-haul trucks on highways
+    delivery: 0.35,    // 35% delivery vehicles
+    industrial: 0.20,  // 20% industrial/port trucks
+    urban: 0.15        // 15% urban routes
+};
 
 async function runSimulator() {
-    console.log(colors.cyan.bold(`Starting Logitrack Simulator with ${TRUCK_COUNT} vehicles...`));
-    console.log(colors.cyan(`Target API: ${API_URL}`));
+    console.log(colors.cyan.bold(`\n🚛 Logitrack Fleet Simulator`));
+    console.log(colors.cyan(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`));
+    console.log(colors.cyan(`Fleet Size: ${TRUCK_COUNT} vehicles`));
+    console.log(colors.cyan(`API Target: ${API_URL}`));
+    console.log(colors.cyan(`Update Rate: ${REPORT_INTERVAL_MS}ms`));
+    console.log(colors.cyan(`Available Routes: ${DUBAI_ROUTES.length}`));
+    console.log(colors.cyan(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`));
 
     const fleet: VirtualTruck[] = [];
 
-    for (let i = 1; i <= TRUCK_COUNT; i++) {
-        const vehicleId = i;
+    // Distribute vehicles across route types based on composition
+    let vehicleId = 1;
+    for (const [routeType, percentage] of Object.entries(FLEET_COMPOSITION)) {
+        const count = Math.floor(TRUCK_COUNT * percentage);
+        console.log(colors.white(`Deploying ${count} vehicles to ${routeType} routes...`));
         
-        // Slightly randomize starting positions so they aren't all in one spot
-        const startLat = DUBAI_LAT + (Math.random() * 0.1 - 0.05);
-        const startLng = DUBAI_LNG + (Math.random() * 0.1 - 0.05);
-
-        const truck = new VirtualTruck(vehicleId, startLat, startLng, API_URL);
-        fleet.push(truck);
-
-        // JITTER: Stagger the start of each truck within the interval window
-        // to prevent all 500 requests hitting the server at the exact same millisecond.
-        const staggerDelay = Math.floor(Math.random() * REPORT_INTERVAL_MS);
-        
-        setTimeout(() => {
-            console.log(colors.gray(`[SYSTEM] Starting heartbeat for Vehicle ${vehicleId}`));
-            truck.startSimulation(REPORT_INTERVAL_MS);
-        }, staggerDelay);
+        for (let i = 0; i < count && vehicleId <= TRUCK_COUNT; i++) {
+            const route = getRouteByType(routeType as 'highway' | 'delivery' | 'industrial' | 'urban');
+            const truck = new VirtualTruck(vehicleId, API_URL, route);
+            fleet.push(truck);
+            vehicleId++;
+        }
     }
 
-    console.log(colors.green.bold(`✅ All ${TRUCK_COUNT} vehicles initialized and staggered.`));
+    // Fill remaining slots with random routes
+    while (vehicleId <= TRUCK_COUNT) {
+        const truck = new VirtualTruck(vehicleId, API_URL);
+        fleet.push(truck);
+        vehicleId++;
+    }
+
+    console.log(colors.cyan(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`));
+    console.log(colors.green.bold(`✅ Fleet deployed! Starting simulation...\n`));
+
+    // Stagger vehicle start times
+    fleet.forEach((truck, index) => {
+        const staggerDelay = Math.floor((index / fleet.length) * REPORT_INTERVAL_MS);
+        
+        setTimeout(() => {
+            truck.startSimulation(REPORT_INTERVAL_MS);
+        }, staggerDelay);
+    });
+
+    // Log fleet status every 30 seconds
+    setInterval(() => {
+        console.log(colors.cyan(`\n📊 Fleet Status: ${fleet.length} vehicles active\n`));
+    }, 30000);
 }
 
 runSimulator().catch(err => {

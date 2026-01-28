@@ -47,7 +47,14 @@ export const updateLocation = async (req: Request, res: Response, io: Server) =>
         });
 
         // 3. Real-Time Emit
-        io.emit('vehicle_update', { vehicleId, lat, lng, speed, status, heading, version, recordedAt });
+        io.emit('location:update', {
+            vehicle_id: vehicleId.toString(),
+            latitude: lat,
+            longitude: lng,
+            speed,
+            heading,
+            recorded_at: recordedAt
+        });
 
         // 4. Check feature flag: Queue or Direct Write
         const useQueue = process.env.USE_QUEUE === 'true';

@@ -5,6 +5,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import vehicleRouter from './routes/vehicleRoutes';
 import analyticsRouter from './routes/analyticsRoutes';
+import geofenceRouter from './routes/geofenceRoutes';
 import logger from './config/logger';
 
 //Workers
@@ -37,6 +38,7 @@ app.get('/', (req, res) => {
 // Mounted routes
 app.use('/api/vehicle', vehicleRouter(io));
 app.use('/api/analytics', analyticsRouter);
+app.use('/api/geofences', geofenceRouter);
 
 // Start analytics refresh interval
 setInterval(refreshDailyStats, 15 * 60 * 1000);

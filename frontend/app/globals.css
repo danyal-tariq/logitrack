@@ -1,0 +1,235 @@
+@import "tailwindcss";
+@import "leaflet-draw/dist/leaflet.draw.css";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --primary: #2563eb;
+  --primary-light: #3b82f6;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Leaflet Marker Fixes */
+.leaflet-marker-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Custom Vehicle Marker */
+.vehicle-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px !important;
+  height: 32px !important;
+  transition: transform 0.3s ease-out;
+}
+
+.vehicle-marker-inner {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vehicle-marker img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.vehicle-marker.moving img {
+  filter: invert(39%) sepia(88%) saturate(4223%) hue-rotate(203deg) brightness(95%) contrast(90%) !important;
+}
+
+.vehicle-marker.idling img {
+  filter: invert(59%) sepia(28%) saturate(749%) hue-rotate(36deg) brightness(95%) contrast(85%) !important;
+}
+
+.vehicle-marker.stopped img {
+  filter: invert(27%) sepia(97%) saturate(3515%) hue-rotate(346deg) brightness(91%) contrast(89%) !important;
+}
+
+.vehicle-marker.selected {
+  z-index: 1000 !important;
+}
+
+.vehicle-marker.selected img {
+  filter: invert(27%) sepia(97%) saturate(3515%) hue-rotate(346deg) brightness(91%) contrast(89%) drop-shadow(0 2px 4px rgba(220, 38, 38, 0.3)) !important;
+  transform: scale(1.3);
+}
+
+/* Pulse animation for selected vehicle */
+.vehicle-marker.selected::before {
+  content: '';
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 70%;
+  background: rgba(220, 38, 38, 0.3);
+  animation: pulse 1.5s ease-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Speed indicator dot */
+.vehicle-marker .speed-indicator {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.vehicle-marker .speed-indicator.fast {
+  background: #22c55e;
+}
+
+.vehicle-marker .speed-indicator.medium {
+  background: #f59e0b;
+}
+
+.vehicle-marker .speed-indicator.slow {
+  background: #ef4444;
+}
+
+/* Popup styles */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.leaflet-popup-content {
+  margin: 12px 16px !important;
+}
+
+.vehicle-popup {
+  min-width: 180px;
+}
+
+.vehicle-popup h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.vehicle-popup .stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+.vehicle-popup .stat-label {
+  color: #64748b;
+}
+
+.vehicle-popup .stat-value {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.vehicle-popup .status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.vehicle-popup .status-badge.moving {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.vehicle-popup .status-badge.idling {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.vehicle-popup .status-badge.stopped {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* Scrollbar styling */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Leaflet Draw Controls */
+.leaflet-draw {
+  z-index: 400 !important;
+}
+
+.leaflet-draw-toolbar a {
+  background-color: white !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.leaflet-draw-toolbar a:hover {
+  background-color: #f1f5f9 !important;
+}
+
+.leaflet-draw-actions {
+  background: white !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.leaflet-draw-actions a {
+  color: #374151 !important;
+}
+
+.leaflet-draw-actions a:hover {
+  background: #f1f5f9 !important;
+}

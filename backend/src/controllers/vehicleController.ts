@@ -69,7 +69,7 @@ export const updateLocation = async (req: Request, res: Response, io: Server) =>
             await writeLocationDirectly({ vehicleId, lat, lng, speed, status, heading, version, recordedAt });
         }
         
-        logger.info({ vehicleId, speed, heading, useQueue }, 'Processed location update');
+        // logger.info({ vehicleId, speed, heading, useQueue }, 'Processed location update');
         res.status(200).json({ success: true });
     } catch (error) {
         logger.error(error, 'Error processing location update');

@@ -9,7 +9,7 @@ const jobsQueue = [] as LocationUpdate[];
 const intervalId = setInterval(() => {
     // Process jobs in batches every second
     processJobsQueue();
-}, 1000);
+}, 500);
 
 const locationWorker = new Worker('locationQueue', async job => {
     const { vehicleId, lat, lng, speed, heading, status, version, recordedAt } = job.data as LocationUpdate;
@@ -19,9 +19,9 @@ const locationWorker = new Worker('locationQueue', async job => {
     drainDelay: 5,
 })
 
-locationWorker.on('completed', (job) => {
-    logger.info({ jobId: job.id }, '✅ Location job completed');
-});
+// locationWorker.on('completed', (job) => {
+//     logger.info({ jobId: job.id }, '✅ Location job completed');
+// });
 locationWorker.on('failed', (job, err) => {
     logger.error({ jobId: job?.id, err }, '❌ Location job failed');
 });
